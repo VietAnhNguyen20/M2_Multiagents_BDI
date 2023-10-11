@@ -21,7 +21,7 @@
  Boston, MA  02111-1307, USA.
  *****************************************************************/
 
-package examples.bookTrading;
+package bookTrading;
 
 import jade.core.Agent;
 import jade.core.AID;
