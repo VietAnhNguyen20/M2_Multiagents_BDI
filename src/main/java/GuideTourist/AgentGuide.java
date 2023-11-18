@@ -3,11 +3,6 @@ package GuideTourist;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.Agent;
 
-
-import jade.core.behaviours.CyclicBehaviour;
-import jade.core.Agent;
-
-
 public class AgentGuide extends Agent {
     //Croyances:
     private String positionAgentA; //position initiale de l'agent
