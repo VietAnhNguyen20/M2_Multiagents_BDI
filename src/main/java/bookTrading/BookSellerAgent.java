@@ -39,10 +39,11 @@ public class BookSellerAgent extends Agent {
     private static final long serialVersionUID = 1L;
 
     // The catalogue of books for sale (maps the title of a book to its price)
-    private Hashtable<String, Integer> catalogue;
+    private Hashtable<String, Integer> catalogue; //Hashtable qui stocke le catalogue des livres disponibles à la vente,
+    // où le titre d'un livre est associé à son prix.
     // The GUI by means of which the user can add books in the catalogue
-    private BookSellerGui myGui;
-
+    private BookSellerGui myGui; //permet à l'utilisateur d'ajouter des livres au catalogue.
+    //instance de la classe BookSellerGui qui représente l'interface graphique (GUI)
     // Put agent initializations here
     protected void setup() {
         // Create the catalogue
@@ -66,6 +67,7 @@ public class BookSellerAgent extends Agent {
             fe.printStackTrace();
         }
 
+        //gérer respectivement les demandes d'offres des acheteurs et les commandes d'achat.
         // Add the behaviour serving queries from buyer agents
         addBehaviour(new OfferRequestsServer());
 
@@ -74,6 +76,7 @@ public class BookSellerAgent extends Agent {
     }
 
     // Put agent clean-up operations here
+    //se désenregistre des pages jaunes, ferme la GUI et affiche un message de terminaison.
     protected void takeDown() {
         // Deregister from the yellow pages
         try {
@@ -93,6 +96,7 @@ public class BookSellerAgent extends Agent {
     /**
      This is invoked by the GUI when the user adds a new book for sale
      */
+    //se désenregistre des pages jaunes, ferme la GUI et affiche un message de terminaison.
     public void updateCatalogue(final String title, final int price) {
         addBehaviour(new OneShotBehaviour() {
             /**
@@ -100,7 +104,7 @@ public class BookSellerAgent extends Agent {
              */
             private static final long serialVersionUID = 1L;
 
-            public void action() {
+            public void action() { //comportement qui ajoute le nouveau livre au catalogue.
                 catalogue.put(title, new Integer(price));
                 System.out.println(title + " inserted into catalogue. Price = " + price);
             }
@@ -115,6 +119,10 @@ public class BookSellerAgent extends Agent {
      with a PROPOSE message specifying the price. Otherwise a REFUSE message is
      sent back.
      */
+    //classe represente le comportement cyclique de l'agent pour traiter
+    // les demandes d'offres (CFP) des acheteurs
+       //Lorsqu'une demande est reçue, l'agent vérifie si le livre demandé
+    // est dans son catalogue et répond avec le prix ou refuse la demande.
     private class OfferRequestsServer extends CyclicBehaviour {
         private static final long serialVersionUID = 1L;
 
@@ -153,6 +161,10 @@ public class BookSellerAgent extends Agent {
      and replies with an INFORM message to notify the buyer that the
      purchase has been sucesfully completed.
      */
+    //Cette classe interne représente le comportement cyclique de l'agent
+    // pour traiter les acceptations d'offres (ACHETTE) des acheteurs.
+        //Lorsqu'une acceptation est reçue, l'agent retire le livre acheté
+    // de son catalogue et envoie une confirmation à l'acheteur.
     private class PurchaseOrdersServer extends CyclicBehaviour {
         private static final long serialVersionUID = 1L;
 
