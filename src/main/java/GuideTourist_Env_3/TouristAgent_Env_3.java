@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.*;
 
 public class TouristAgent_Env_3 extends Agent {
-    private AID guiderAgent;
     private int numberOfRooms = 6;
     private boolean AlreadyProposedSequencesOfVisits = false;
 
@@ -53,22 +52,55 @@ public class TouristAgent_Env_3 extends Agent {
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
-
+        DFAgentDescription guider_template = new DFAgentDescription();
+        ServiceDescription guider_sd = new ServiceDescription();
+        guider_sd.setType("guider");
+        guider_template.addServices(guider_sd);
         // Add behavior to handle CFPs
         addBehaviour(new ProposeSequenceOfVisits());
 
         addBehaviour(new TickerBehaviour(this, 10000) {
             protected void onTick() {
-                sendRequestForAdditionalInformation();
+                try {DFAgentDescription[] guiderResult = DFService.search(myAgent, guider_template);
+                    boolean guidersPresent = guiderResult.length > 0;
+
+                    if (guidersPresent) {
+                        boolean rand = new Random().nextInt(100) <= 2;
+                        if(rand){
+                            System.out.println("TOURIST "+ myAgent.getName() + " skips the listening and moves to the next room");
+                            sendRequestForAdditionalInformation(false);
+                        }
+                        else{
+                            sendRequestForAdditionalInformation(null);
+                        }
+                    }}
+                catch (FIPAException e) {
+                    e.printStackTrace();
+                }
             }
 
-            private void sendRequestForAdditionalInformation() {
-                // Create a proposal message (CFP)
-                ACLMessage proposal = new ACLMessage(ACLMessage.CFP);
-                boolean additionalInformationRequested = new Random().nextInt(100) <= 50;
-                proposal.setContent(String.valueOf(additionalInformationRequested));
-                proposal.addReceiver(guiderAgent); // Replace with the actual AID of the guider agent
-                send(proposal);
+            private void sendRequestForAdditionalInformation(Boolean bool_value) {
+                // Check if there's a CFP message in the queue
+                ACLMessage cfp = receive(MessageTemplate.MatchPerformative(ACLMessage.CFP));
+
+                if (cfp != null) {
+                    if (bool_value==null) {
+                        ACLMessage response = new ACLMessage(ACLMessage.PROPOSE);
+                        // Create a proposal message (CFP)
+                        boolean additionalInformationRequested = new Random().nextInt(100) <= 50;
+                        response.setContent(String.valueOf(additionalInformationRequested));
+                        response.addReceiver(cfp.getSender()); // Replace with the actual AID of the guider agent
+                        send(response);
+                    }
+                    else {
+                        ACLMessage response = new ACLMessage(ACLMessage.PROPOSE);
+                        // Create a proposal message (CFP)
+                        response.setContent(String.valueOf(bool_value));
+                        response.addReceiver(cfp.getSender()); // Replace with the actual AID of the guider agent
+                        send(response);
+
+                    }
+                }
             }
         });
 

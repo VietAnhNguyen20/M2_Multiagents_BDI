@@ -101,13 +101,12 @@ public class GuiderAgent_Env_3 extends Agent {
                     for (DFAgentDescription agent : result) {
                         AID touristAID = agent.getName();
                         boolean feedback = getAdditionRequestFromTourist(touristAID);
-                        System.out.println(feedback);
                         if (feedback) {
                             System.out.println("GUIDE: Received additional request from " + touristAID.getName());
 
                             ACLMessage response = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
                             response.setContent("ADDITIONAL INFOS: More provided information for " + touristAID.getName());
-                            System.out.println("GUIDE: Provided additional request to " + touristAID.getName());
+                            System.out.println("GUIDE: =====> Provided additional request to " + touristAID.getName());
                             response.addReceiver(touristAID);
                             send(response);
                         }
@@ -148,7 +147,6 @@ public class GuiderAgent_Env_3 extends Agent {
                 cfp.setContent("Do you have any additional request for Guider ?");
 
                 myAgent.send(cfp);
-                System.out.println("DONE SENDING");
 
                 // Wait for any response
                 MessageTemplate template = MessageTemplate.and(
@@ -157,7 +155,6 @@ public class GuiderAgent_Env_3 extends Agent {
                 );
 
                 ACLMessage response = myAgent.blockingReceive(template);
-
                 if (response != null) {
                     String content = response.getContent();
 
