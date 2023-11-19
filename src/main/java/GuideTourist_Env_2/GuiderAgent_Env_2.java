@@ -1,4 +1,4 @@
-package GuideTourist_Env_2.GuideTourist_Env_1;
+package GuideTourist_Env_2;
 
 import jade.core.AID;
 import jade.core.Agent;
