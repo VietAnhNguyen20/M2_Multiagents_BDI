@@ -191,8 +191,6 @@ public class GuiderAgent_Env_2 extends Agent {
                 majorityPreferences[i] = majorityPreference;
             }
 
-            System.out.println("Majority Preferences: " + Arrays.toString(majorityPreferences));
-
             return majorityPreferences;
         }
 

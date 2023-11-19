@@ -74,22 +74,51 @@ public class GuiderAgent_Env_3 extends Agent {
         addBehaviour(new TickerBehaviour(this, 10000) {
             public void onTick() {
                 int currentRoom = sequencesOfVisiting[currentRoomIndex];
+                boolean isAtLeast80Percent = isAtLeast80PercentInRoom(currentRoom);
 
-                // Receive tour requests from Touristic Agents
-                ACLMessage request = receive();
-                if (request != null) {
-                    // Process the tour request
-                    System.out.println("GUIDE: Received tour request from " + request.getSender().getName() + ": " + request.getContent());
-
-                    // Respond to the tour request
-                    ACLMessage response = new ACLMessage(ACLMessage.INFORM);
-                    response.setContent("PRESENTATION: Tour details for Room " + currentRoom);
-                    response.addReceiver(request.getSender());
-                    send(response);
-                } else {
-                    // No request received yet
-                    System.out.println("No additional request received for Room " + currentRoom + ". Moving to the next room.");
+                if (isAtLeast80Percent) {
+                    System.out.println("GUIDE: WAITING - Not enough tourists in Room " + currentRoom);
+                    try {
+                        // Introduce a delay of 5 seconds (5000 milliseconds)
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
+                System.out.println("GUIDE: ENOUGH TOURIST - At least 80% of tourists are in Room " + currentRoom +". Start PRESENTING Room " + currentRoom);
+                deliverRoomPresentation(currentRoom);
+
+                // Get the request from tourists (if they have it):
+
+                DFAgentDescription tourist_template = new DFAgentDescription();
+                ServiceDescription tourist_sd = new ServiceDescription();
+                tourist_sd.setType("tourist");
+                tourist_template.addServices(tourist_sd);
+
+                try {
+                    DFAgentDescription[] result = DFService.search(myAgent, tourist_template);
+
+                    for (DFAgentDescription agent : result) {
+                        AID touristAID = agent.getName();
+                        boolean feedback = getAdditionRequestFromTourist(touristAID);
+                        System.out.println(feedback);
+                        if (feedback) {
+                            System.out.println("GUIDE: Received additional request from " + touristAID.getName());
+
+                            ACLMessage response = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+                            response.setContent("ADDITIONAL INFOS: More provided information for " + touristAID.getName());
+                            System.out.println("GUIDE: Provided additional request to " + touristAID.getName());
+                            response.addReceiver(touristAID);
+                            send(response);
+                        }
+                    }
+
+                } catch (FIPAException fe) {
+                    fe.printStackTrace();
+                }
+
+                System.out.println("No more additional requests received for Room " + currentRoom + ". Moving to the next room.");
+
 
                 // Move to the next room
                 currentRoomIndex = (currentRoomIndex + 1) % numberOfRooms;
@@ -98,7 +127,48 @@ public class GuiderAgent_Env_3 extends Agent {
                     System.out.println("GUIDE: The trip has ended!");
                     doDelete();
                 }
+                else{
+                    System.out.println("----------------CHANGE ROOM-------------------");
+                }
             }
+
+
+            private boolean isAtLeast80PercentInRoom(int room) {
+                return new Random().nextBoolean();
+            }
+
+            private void deliverRoomPresentation(int room) {
+                // Implement the logic to deliver the room presentation
+                System.out.println("GUIDE: Delivering presentation for Room " + room);
+            }
+
+            private boolean getAdditionRequestFromTourist(AID touristAID) {
+                ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
+                cfp.addReceiver(touristAID);
+                cfp.setContent("Do you have any additional request for Guider ?");
+
+                myAgent.send(cfp);
+                System.out.println("DONE SENDING");
+
+                // Wait for any response
+                MessageTemplate template = MessageTemplate.and(
+                        MessageTemplate.MatchPerformative(ACLMessage.PROPOSE),
+                        MessageTemplate.MatchSender(touristAID)
+                );
+
+                ACLMessage response = myAgent.blockingReceive(template);
+
+                if (response != null) {
+                    String content = response.getContent();
+
+                    return Boolean.parseBoolean(content);
+                } else {
+                    System.out.println("No response received.");
+                    return false; // or handle accordingly based on your requirements
+                }
+
+            }
+
         });
     }
 
@@ -185,8 +255,6 @@ public class GuiderAgent_Env_3 extends Agent {
 
                 majorityPreferences[i] = majorityPreference;
             }
-
-            System.out.println("Majority Preferences: " + Arrays.toString(majorityPreferences));
 
             return majorityPreferences;
         }

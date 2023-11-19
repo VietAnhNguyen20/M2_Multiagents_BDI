@@ -4,6 +4,7 @@ package GuideTourist_Env_3;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -12,6 +13,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 import java.util.Arrays;
+import java.util.*;
 
 public class TouristAgent_Env_3 extends Agent {
     private AID guiderAgent;
@@ -54,6 +56,22 @@ public class TouristAgent_Env_3 extends Agent {
 
         // Add behavior to handle CFPs
         addBehaviour(new ProposeSequenceOfVisits());
+
+        addBehaviour(new TickerBehaviour(this, 10000) {
+            protected void onTick() {
+                sendRequestForAdditionalInformation();
+            }
+
+            private void sendRequestForAdditionalInformation() {
+                // Create a proposal message (CFP)
+                ACLMessage proposal = new ACLMessage(ACLMessage.CFP);
+                boolean additionalInformationRequested = new Random().nextInt(100) <= 50;
+                proposal.setContent(String.valueOf(additionalInformationRequested));
+                proposal.addReceiver(guiderAgent); // Replace with the actual AID of the guider agent
+                send(proposal);
+            }
+        });
+
     }
 
     private class ProposeSequenceOfVisits extends CyclicBehaviour {
